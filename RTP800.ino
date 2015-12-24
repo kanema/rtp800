@@ -6,7 +6,7 @@ const int motorRight = 5;
 const int motorLeft = 6;
 const int motorDirRight = 7;
 const int motorDirLeft = 8;
-const int motorMinSpeed = 70;
+const int motorMinSpeed = 160;
 const int motorMaxSpeed = 255;
 const float motorMaxVoltage = 6.0;
 
@@ -21,8 +21,8 @@ const int trigPinBack = 4;
 
 int obstacleDistance = 50;
 int directionChangeTime = 1000;
-int stopTime = 250;
-int runTime = 250;
+int stopTime = 500;
+int runTime = 0;
 
 bool stopped = true;
 
@@ -50,17 +50,9 @@ void setup(){
   pinMode(trigPinBack, OUTPUT);
 
   Serial.println("start");
-
-  Serial.println("--------------------");
-  Serial.println("DC VOLTMETER");
-  Serial.print("Maximum Voltage: ");
-  Serial.print((int)(vPow / (r2 / (r1 + r2))));
-  Serial.println("V");
-  Serial.println("--------------------");
-  Serial.println("");
 }
 
-int get_distance(int echoP, int trigP){
+int getDistance(int echoP, int trigP){
   long duration, distance;
   digitalWrite(trigP, LOW);  // Added this line
   delayMicroseconds(2); // Added this line
@@ -78,17 +70,14 @@ float getVoltage()
   return v / (r2 / (r1 + r2));
 }
 
-float getSpeed(int speed = motorMaxSpeed)
+float getSpeed(int speed)
 {
+  if (speed == 0) {
+    return speed;
+  }
   float voltageMultiplier = getVoltage() / motorMaxVoltage;
-  int result =  motorMaxSpeed / voltageMultiplier;
-  Serial.print("speedRequired: ");
-  Serial.println(speed);
-  Serial.print("speedExecuted: ");
-  Serial.println(result);
-  Serial.print("voltageMultiplier: ");
-  Serial.println(voltageMultiplier);
-  Serial.println("-----------------");
+  int result =  speed / voltageMultiplier;
+  // Serial.println(result);
   return result;
 }
 
@@ -133,17 +122,17 @@ void turnRight()
 
 bool hasFrontRightObstacle()
 {
-  return get_distance(echoPinFrontRight, trigPinFrontRight) < obstacleDistance;
+  return getDistance(echoPinFrontRight, trigPinFrontRight) < obstacleDistance;
 }
 
 bool hasFrontLeftObstacle()
 {
-  return get_distance(echoPinFrontLeft, trigPinFrontLeft) < obstacleDistance;
+  return getDistance(echoPinFrontLeft, trigPinFrontLeft) < obstacleDistance;
 }
 
 bool hasBackObstacle()
 {
-  return get_distance(echoPinBack, trigPinBack) < obstacleDistance;
+  return getDistance(echoPinBack, trigPinBack) < obstacleDistance;
 }
 
 void loop(){
@@ -162,11 +151,11 @@ void loop(){
     Serial.println("hasBackObstacle");
   }
   else if (frontRightObstacle) {
-    turnLeft();
+    turnRight();
     Serial.println("hasFrontRightObstacle");
   }
   else if (frontLeftObstacle) {
-    turnRight();
+    turnLeft();
     Serial.println("hasFrontLeftObstacle");
   }
   else {
