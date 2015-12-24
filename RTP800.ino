@@ -6,6 +6,7 @@ const int motorRight = 5;
 const int motorLeft = 6;
 const int motorDirRight = 7;
 const int motorDirLeft = 8;
+
 const int motorMinSpeed = 160;
 const int motorMaxSpeed = 255;
 const float motorMaxVoltage = 6.0;
