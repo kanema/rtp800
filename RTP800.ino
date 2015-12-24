@@ -8,6 +8,7 @@ const int motorDirRight = 7;
 const int motorDirLeft = 8;
 const int motorMinSpeed = 70;
 const int motorMaxSpeed = 255;
+const float motorMaxVoltage = 6.0;
 
 const int echoPinFrontRight = 13;
 const int trigPinFrontRight = 12;
@@ -24,6 +25,10 @@ int stopTime = 250;
 int runTime = 250;
 
 bool stopped = true;
+
+float vPow = 5.0;
+float r1 = 100000.0;
+float r2 = 10000.0;
 
 // ------------------------------------------------
 
@@ -45,6 +50,14 @@ void setup(){
   pinMode(trigPinBack, OUTPUT);
 
   Serial.println("start");
+
+  Serial.println("--------------------");
+  Serial.println("DC VOLTMETER");
+  Serial.print("Maximum Voltage: ");
+  Serial.print((int)(vPow / (r2 / (r1 + r2))));
+  Serial.println("V");
+  Serial.println("--------------------");
+  Serial.println("");
 }
 
 int get_distance(int echoP, int trigP){
@@ -59,9 +72,30 @@ int get_distance(int echoP, int trigP){
   return distance;
 }
 
+float getVoltage()
+{
+  float v = (analogRead(0) * vPow) / 1024.0;
+  return v / (r2 / (r1 + r2));
+}
+
+float getSpeed(int speed = motorMaxSpeed)
+{
+  float voltageMultiplier = getVoltage() / motorMaxVoltage;
+  int result =  motorMaxSpeed / voltageMultiplier;
+  Serial.print("speedRequired: ");
+  Serial.println(speed);
+  Serial.print("speedExecuted: ");
+  Serial.println(result);
+  Serial.print("voltageMultiplier: ");
+  Serial.println(voltageMultiplier);
+  Serial.println("-----------------");
+  return result;
+}
+
 // ------------------------------------------------
 
 void motors(int motor, bool on = true, bool front = true, int speed = motorMaxSpeed){
+  speed = getSpeed(speed);
   analogWrite(motor, speed);
   digitalWrite((motor == motorLeft) ? motorDirLeft : motorDirRight, (front) ? HIGH : LOW);
 }
@@ -113,6 +147,7 @@ bool hasBackObstacle()
 }
 
 void loop(){
+  
   bool frontRightObstacle = hasFrontRightObstacle();
   bool frontLeftObstacle = hasFrontLeftObstacle();
   bool backObstacle = hasBackObstacle();
